@@ -23,15 +23,15 @@ jobs:
         run: |
           echo "DB_HOST=127.0.0.1" >> .env
           echo "DB_PORT=3306" >> .env
-          echo "DB_NAME=labo04_db" >> .env
-          echo "DB_USER=labo04" >> .env
-          echo "DB_PASS=labo04" >> .env
+          echo "DB_NAME=labo05_db" >> .env
+          echo "DB_USER=labo05" >> .env
+          echo "DB_PASS=labo05" >> .env
           echo "REDIS_HOST=127.0.0.1" >> .env
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
-      - name: Créer le réseau labo04-network s'il n'existe pas
-        run: docker network inspect labo04-network >/dev/null 2>&1 || docker network create labo04-network
+      - name: Créer le réseau labo05-network s'il n'existe pas
+        run: docker network inspect labo05-network >/dev/null 2>&1 || docker network create labo04-network
 
 
       - name: Démarrer le conteneur
@@ -98,16 +98,16 @@ jobs:
         run: |
           echo "DB_HOST=mysql" > .env
           echo "DB_PORT=3306" >> .env
-          echo "DB_NAME=labo04_db" >> .env
-          echo "DB_USER=labo04" >> .env
-          echo "DB_PASS=labo04" >> .env
+          echo "DB_NAME=labo05_db" >> .env
+          echo "DB_USER=labo05" >> .env
+          echo "DB_PASS=labo05" >> .env
           echo "REDIS_HOST=redis" >> .env
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
           ls -la .env
 
-      - name: Créer le réseau labo04-network s'il n'existe pas
-        run: docker network inspect labo04-network >/dev/null 2>&1 || docker network create labo04-network
+      - name: Créer le réseau labo05-network s'il n'existe pas
+        run: docker network inspect labo05-network >/dev/null 2>&1 || docker network create labo04-network
 
 
       - name: Déploiement local
