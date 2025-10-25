@@ -107,7 +107,7 @@ jobs:
           ls -la .env
 
       - name: Créer le réseau labo05-network s'il n'existe pas
-        run: docker network inspect labo05-network >/dev/null 2>&1 || docker network create labo04-network
+        run: docker network create labo04-network
 
 
       - name: Déploiement local
