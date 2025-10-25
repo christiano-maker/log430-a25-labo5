@@ -113,13 +113,19 @@ def request_payment_link(order_id, total_amount, user_id):
     }
 
     # TODO: Requête à POST /payments
+
+    
+    response_from_payment_service = requests.post('http://api-gateway:8080/payments-api/payments',
+      json=payment_transaction,
+      headers={'Content-Type': 'application/json'}
+    )
     print("")
-    response_from_payment_service = {}
+    #response_from_payment_service = {}
 
     if True: # if response.ok
         print(f"ID paiement: {payment_id}")
 
-    return f"http://api-gateway:8080/payments-api/payments/process/{payment_id}" 
+    return f"http://api-gateway:8080/payments-api/payments/process/{response_from_payment_service.json().get('payment_id')}" 
 
 def delete_order(order_id: int):
     """Delete order in MySQL, keep Redis in sync"""

@@ -1,0 +1,120 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Creer fichier .env
+        run: |
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_NAME=labo04_db" >> .env
+          echo "DB_USER=labo04" >> .env
+          echo "DB_PASS=labo04" >> .env
+          echo "REDIS_HOST=127.0.0.1" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_DB=0" >> .env
+
+      - name: Créer le réseau labo04-network s'il n'existe pas
+        run: docker network inspect labo04-network >/dev/null 2>&1 || docker network create labo04-network
+
+
+      - name: Démarrer le conteneur
+        run: docker compose up -d --build
+
+      - name: Attendre MySQL
+        run: |
+          sleep 10
+          timeout=60
+          until docker compose exec mysql mysqladmin ping -h localhost -u root -proot --silent; do
+            echo "Waiting for MySQL..."
+            sleep 3
+            timeout=$((timeout - 3))
+            if [ $timeout -le 0 ]; then
+              echo "MySQL failed to start"
+              exit 1
+            fi
+          done
+          sleep 5
+
+      - name: Attendre Redis prêt (simple ping)
+        run: |
+          timeout=40
+          until (echo PING | nc -w 2 127.0.0.1 6379 | grep -q PONG); do
+            echo "Waiting for Redis..."
+            sleep 2
+            timeout=$((timeout - 2))
+            if [ $timeout -le 0 ]; then
+              echo "Redis failed to start"
+              docker compose logs redis || true
+              exit 1
+            fi
+          done
+
+      - name: Exécuter test_user.py (TODO - inclure tous les tests)
+        working-directory: src
+        run: |
+          python3 -m pytest
+
+
+      - name: Déploiement
+        working-directory: src
+        run: echo "TODO - Faire le déploiement"
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
+
+
+  deploy:
+    runs-on: self-hosted
+    needs: test   # Ne se lance que si les tests passent
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug workspace
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          pwd
+          ls -la
+
+      - name: Creer .env pour le déploiement
+        working-directory: ${{ github.workspace }}
+        run: |
+          echo "DB_HOST=mysql" > .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_NAME=labo04_db" >> .env
+          echo "DB_USER=labo04" >> .env
+          echo "DB_PASS=labo04" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+          echo "REDIS_DB=0" >> .env
+          ls -la .env
+
+      - name: Créer le réseau labo04-network s'il n'existe pas
+        run: docker network inspect labo04-network >/dev/null 2>&1 || docker network create labo04-network
+
+
+      - name: Déploiement local
+        run: |
+          cd $GITHUB_WORKSPACE
+          echo "Déploiement sur la VM en cours..."
+
+          docker compose down || true
+          docker compose up -d --build    
+          docker compose ps

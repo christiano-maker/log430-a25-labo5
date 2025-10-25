@@ -128,6 +128,14 @@ def put_orders():
 def metrics():
     return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
+import time
+
+@app.get('/test/slow/<int:delay_seconds>')
+def test_slow_endpoint(delay_seconds):
+    """Endpoint pour tester les timeouts"""
+    time.sleep(delay_seconds)  # Simule une opération lente
+    return {"message": f"Response after {delay_seconds} seconds"}, 200
+
 # Start Flask app
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
