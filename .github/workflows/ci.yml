@@ -94,7 +94,7 @@ jobs:
           pwd
           ls -la
 
-      - name: Creer .env pour le déploiemen
+      - name: Creer .env pour le déploiement
         working-directory: ${{ github.workspace }}
         run: |
           echo "DB_HOST=mysql" > .env
